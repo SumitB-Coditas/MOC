@@ -21,3 +21,23 @@ export function toIsoDate(date: Date): string {
 export function todayIsoDate(): string {
   return toIsoDate(new Date())
 }
+
+const DISPLAY_LOCALE = 'en-GB'
+
+/** "17 May 1990" for a `YYYY-MM-DD` calendar date (no timezone shift). */
+export function formatCalendarDate(isoDate: string): string {
+  if (!isValidIsoDate(isoDate)) return isoDate
+  return new Intl.DateTimeFormat(DISPLAY_LOCALE, { dateStyle: 'medium', timeZone: 'UTC' }).format(
+    new Date(`${isoDate}T00:00:00Z`),
+  )
+}
+
+/** "4 Oct 2026, 14:58" for an ISO timestamp, in the viewer's timezone. */
+export function formatDateTime(isoTimestamp: string): string {
+  const date = new Date(isoTimestamp)
+  if (Number.isNaN(date.getTime())) return isoTimestamp
+  return new Intl.DateTimeFormat(DISPLAY_LOCALE, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date)
+}

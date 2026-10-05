@@ -1,9 +1,10 @@
-import { z } from 'zod'
 import { ADMIN_ACCOUNT } from '@/config/admin'
 import { hashPassword, createSalt } from '@/lib/crypto'
 import { normalizeEmail } from '@/lib/email'
 import { AppError } from '@/lib/errors'
 import { createId } from '@/lib/id'
+import { toFieldErrors } from '@/lib/validation'
+import { assertEmailAvailable } from '@/services/emailAvailability'
 import { usersCollection } from '@/services/repositories/users'
 import { createSessionStore, subscribeToSessionChangesInOtherTabs } from '@/services/session'
 import { storage as appStorage, type StorageClient } from '@/services/storage'
@@ -28,7 +29,6 @@ export interface AuthService {
 
 /** Same message for unknown email and wrong password, so accounts can't be probed. */
 export const INVALID_CREDENTIALS_MESSAGE = 'Invalid email or password.'
-const DUPLICATE_EMAIL_MESSAGE = 'An account with this email already exists.'
 
 const ADMIN_USER: AuthUser = {
   id: ADMIN_ACCOUNT.id,
@@ -41,14 +41,6 @@ const ADMIN_USER: AuthUser = {
 function toAuthUser(user: UserRecord, role: Role): AuthUser {
   const { id, firstName, lastName, email } = user
   return { id, firstName, lastName, email, role }
-}
-
-function firstMessages(fieldErrors: Record<string, string[] | undefined>): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(fieldErrors).flatMap(([field, messages]) =>
-      messages?.[0] ? [[field, messages[0]]] : [],
-    ),
-  )
 }
 
 interface AuthServiceDeps {
@@ -97,23 +89,15 @@ export function createAuthService({
       // Validated here as well as in the form, as a real backend would.
       const parsed = registrationInputSchema.safeParse(input)
       if (!parsed.success) {
-        const { formErrors, fieldErrors } = z.flattenError(parsed.error)
-        throw new AppError(
-          'VALIDATION',
-          formErrors[0] ?? 'Please correct the highlighted fields.',
-          {
-            fieldErrors: firstMessages(fieldErrors),
-          },
-        )
+        const { formError, fieldErrors } = toFieldErrors(parsed.error)
+        throw new AppError('VALIDATION', formError ?? 'Please correct the highlighted fields.', {
+          fieldErrors,
+        })
       }
       const { firstName, lastName, dateOfBirth, email, password } = parsed.data
 
       const repository = users()
-      if (email === ADMIN_ACCOUNT.email || repository.find((user) => user.email === email)) {
-        throw new AppError('CONFLICT', DUPLICATE_EMAIL_MESSAGE, {
-          fieldErrors: { email: DUPLICATE_EMAIL_MESSAGE },
-        })
-      }
+      assertEmailAvailable(repository, email)
 
       const timestamp = now().toISOString()
       const passwordSalt = createSalt()

@@ -2,7 +2,7 @@
 
 A frontend-only Certificate Management System with three roles: **Admin**, **Candidate** and **Diplomate**. Admins assign certificate forms. Candidates and Diplomates fill them in, save drafts and submit them. The app tracks 3-year renewal cycles with a grace period.
 
-> **Status:** Phase 2 (authentication and registration) is awaiting review. Pages not yet built render placeholders. See [Roadmap](#roadmap).
+> **Status:** Phase 3 (Admin dashboard and user management) is awaiting review. Pages not yet built render placeholders. See [Roadmap](#roadmap).
 
 ## Tech stack
 
@@ -87,19 +87,30 @@ All data lives in `localStorage` under the `cms:` prefix, accessed only through 
 
 If `localStorage` is unavailable (for example, in some private-browsing modes), the app falls back to in-memory storage.
 
+## User management (Admin)
+
+- **Dashboard** (`/admin/dashboard`) shows active users, active Candidates, active Diplomates and inactive accounts. Each tile links to the matching filtered user list. It also shows a role breakdown and the newest registrations.
+- **Users** (`/admin/users`) lists each user's name, email, date of birth, role, registration date and status. Search matches name or email, ignoring case, and the list filters by role and by status (active by default). Filters live in the URL (`?q=&role=&status=`), so filtered views can be bookmarked.
+- **User details** (`/admin/users/:userId`):
+  - The Admin can edit first name, last name, date of birth and email, using the same validation rules as registration.
+  - Emails are normalized, must be unique (ignoring case), and cannot be the Admin demo address.
+  - Password, user ID and role cannot be edited. Role is derived from the certification lifecycle.
+- **Deactivation is a soft delete.** It sets `deletedAt`, after a confirmation step. Records are never physically removed, and deactivated users can be reactivated. A deactivated user cannot sign in, and any existing session is rejected the next time it is validated. The Admin account cannot be deactivated.
+- **Server-side authorization:** every user-management operation checks for an Admin session inside the service (`requireAdmin`), as a backend would, and not just in the route guards.
+
 ## Routes
 
 | Path                                                     | Area      | Implemented in |
 | -------------------------------------------------------- | --------- | -------------- |
-| `/login`, `/register`                                    | Public    | Phase 2        |
-| `/admin` → `/admin/dashboard`                            | Admin     | Phase 3        |
-| `/admin/users`, `/admin/users/:userId`                   | Admin     | Phase 3        |
+| `/login`, `/register`                                    | Public    | Done           |
+| `/admin` → `/admin/dashboard`                            | Admin     | Done           |
+| `/admin/users`, `/admin/users/:userId`                   | Admin     | Done           |
 | `/admin/forms`                                           | Admin     | Phase 5        |
 | `/admin/settings`                                        | Admin     | Phase 7        |
 | `/admin/submissions`, `/admin/submissions/:submissionId` | Admin     | Phase 6        |
-| `/candidate/dashboard`                                   | Candidate | Phase 2        |
-| `/diplomate/dashboard`                                   | Diplomate | Phase 2        |
-| `/profile`                                               | Member    | Phase 2        |
+| `/candidate/dashboard`                                   | Candidate | Phase 5        |
+| `/diplomate/dashboard`                                   | Diplomate | Phase 5        |
+| `/profile`                                               | Member    | Phase 8        |
 | `/forms/:assignmentId`                                   | Member    | Phase 6        |
 | `/history`, `/history/:submissionId`                     | Member    | Phase 7        |
 | `/403`, `*` (404)                                        | —         | Done           |
@@ -107,7 +118,7 @@ If `localStorage` is unavailable (for example, in some private-browsing modes), 
 ## Roadmap
 
 - [x] **Phase 1:** Project Setup and Design System _(complete; includes the initial scaffold)_
-- [ ] **Phase 2:** Authentication and Registration
+- [x] **Phase 2:** Authentication and Registration
 - [ ] **Phase 3:** Admin Dashboard and User Management
 - [ ] **Phase 4:** Certification Engine: lifecycle rules, date calculations, grace periods, status transitions, unit tests
 - [ ] **Phase 5:** Form Assignment

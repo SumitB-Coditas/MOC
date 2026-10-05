@@ -8,6 +8,9 @@ import { RequireAuth } from '@/features/auth/guards/RequireAuth'
 import { RoleRedirect } from '@/features/auth/guards/RoleRedirect'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage'
+import { AdminDashboardPage } from '@/features/dashboard/pages/AdminDashboardPage'
+import { UserDetailPage } from '@/features/users/pages/UserDetailPage'
+import { UsersListPage } from '@/features/users/pages/UsersListPage'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import type { Role } from '@/types/auth'
@@ -51,15 +54,9 @@ export const routes: RouteObject[] = [
     ['ADMIN'],
     [
       { path: ROUTES.admin.root, element: <Navigate to={ROUTES.admin.dashboard} replace /> },
-      {
-        path: ROUTES.admin.dashboard,
-        element: <PlaceholderPage title="Admin Dashboard" phase={3} />,
-      },
-      { path: ROUTES.admin.users, element: <PlaceholderPage title="Users" phase={3} /> },
-      {
-        path: ROUTES.admin.userDetail,
-        element: <PlaceholderPage title="User Details" phase={3} />,
-      },
+      { path: ROUTES.admin.dashboard, element: <AdminDashboardPage /> },
+      { path: ROUTES.admin.users, element: <UsersListPage /> },
+      { path: ROUTES.admin.userDetail, element: <UserDetailPage /> },
       {
         path: ROUTES.admin.submissions,
         element: <PlaceholderPage title="Submissions" phase={6} />,
@@ -106,7 +103,7 @@ export const routes: RouteObject[] = [
         path: ROUTES.member.historyDetail,
         element: <PlaceholderPage title="Submission Details" phase={7} />,
       },
-      { path: ROUTES.member.profile, element: <PlaceholderPage title="Profile" phase={3} /> },
+      { path: ROUTES.member.profile, element: <PlaceholderPage title="Profile" phase={8} /> },
     ],
   ),
   ...devRoutes,
