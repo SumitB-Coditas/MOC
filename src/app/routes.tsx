@@ -1,16 +1,16 @@
 import { Navigate, type RouteObject } from 'react-router-dom'
 import { PlaceholderPage } from '@/components/common/PlaceholderPage'
 import { AuthLayout } from '@/components/layout/AuthLayout'
-import { DashboardLayout } from '@/components/layout/DashboardLayout'
-import {
-  ADMIN_NAVIGATION,
-  CANDIDATE_NAVIGATION,
-  DIPLOMATE_NAVIGATION,
-  MEMBER_NAVIGATION,
-} from '@/config/navigation'
 import { ROUTES } from '@/config/routes'
+import { RoleDashboardLayout } from '@/features/auth/components/RoleDashboardLayout'
+import { PublicOnly } from '@/features/auth/guards/PublicOnly'
+import { RequireAuth } from '@/features/auth/guards/RequireAuth'
+import { RoleRedirect } from '@/features/auth/guards/RoleRedirect'
+import { LoginPage } from '@/features/auth/pages/LoginPage'
+import { RegisterPage } from '@/features/auth/pages/RegisterPage'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import type { Role } from '@/types/auth'
 
 /** Development-only routes; the branch (and its lazy chunk) is dropped from production builds. */
 const devRoutes: RouteObject[] = import.meta.env.DEV
@@ -24,25 +24,33 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
     ]
   : []
 
-/**
- * Route tree. Pages are placeholders until their phase is implemented.
- * Auth guards (RequireAuth / RequireRole / PublicOnly / RoleRedirect) are added in Phase 2.
- */
+/** An authenticated area: role gate, then the role-aware dashboard frame. */
+function protectedArea(allowedRoles: readonly Role[], children: RouteObject[]): RouteObject {
+  return {
+    element: <RequireAuth allowedRoles={allowedRoles} />,
+    children: [{ element: <RoleDashboardLayout />, children }],
+  }
+}
+
+/** Route tree. Pages not yet built render a placeholder naming their phase. */
 export const routes: RouteObject[] = [
-  // Becomes a role-based redirect in Phase 2.
-  { path: ROUTES.root, element: <Navigate to={ROUTES.login} replace /> },
+  { path: ROUTES.root, element: <RoleRedirect /> },
   {
-    element: <AuthLayout />,
+    element: <PublicOnly />,
     children: [
-      { path: ROUTES.login, element: <PlaceholderPage title="Sign in" phase={2} /> },
-      { path: ROUTES.register, element: <PlaceholderPage title="Register" phase={2} /> },
+      {
+        element: <AuthLayout />,
+        children: [
+          { path: ROUTES.login, element: <LoginPage /> },
+          { path: ROUTES.register, element: <RegisterPage /> },
+        ],
+      },
     ],
   },
-  {
-    path: ROUTES.admin.root,
-    element: <DashboardLayout areaLabel="Admin" navigation={ADMIN_NAVIGATION} />,
-    children: [
-      { index: true, element: <Navigate to={ROUTES.admin.dashboard} replace /> },
+  protectedArea(
+    ['ADMIN'],
+    [
+      { path: ROUTES.admin.root, element: <Navigate to={ROUTES.admin.dashboard} replace /> },
       {
         path: ROUTES.admin.dashboard,
         element: <PlaceholderPage title="Admin Dashboard" phase={3} />,
@@ -54,41 +62,41 @@ export const routes: RouteObject[] = [
       },
       {
         path: ROUTES.admin.submissions,
-        element: <PlaceholderPage title="Submissions" phase={7} />,
+        element: <PlaceholderPage title="Submissions" phase={6} />,
       },
       {
         path: ROUTES.admin.submissionDetail,
-        element: <PlaceholderPage title="Submission Details" phase={7} />,
+        element: <PlaceholderPage title="Submission Details" phase={6} />,
       },
-      { path: ROUTES.admin.forms, element: <PlaceholderPage title="Form Templates" phase={4} /> },
-      { path: ROUTES.admin.settings, element: <PlaceholderPage title="Demo Settings" phase={6} /> },
+      { path: ROUTES.admin.forms, element: <PlaceholderPage title="Form Templates" phase={5} /> },
+      { path: ROUTES.admin.settings, element: <PlaceholderPage title="Demo Settings" phase={7} /> },
     ],
-  },
-  {
-    element: <DashboardLayout areaLabel="Candidate" navigation={CANDIDATE_NAVIGATION} />,
-    children: [
+  ),
+  protectedArea(
+    ['CANDIDATE'],
+    [
       {
         path: ROUTES.candidate.dashboard,
-        element: <PlaceholderPage title="Candidate Dashboard" phase={2} />,
+        element: <PlaceholderPage title="Candidate Dashboard" phase={5} />,
       },
     ],
-  },
-  {
-    element: <DashboardLayout areaLabel="Diplomate" navigation={DIPLOMATE_NAVIGATION} />,
-    children: [
+  ),
+  protectedArea(
+    ['DIPLOMATE'],
+    [
       {
         path: ROUTES.diplomate.dashboard,
-        element: <PlaceholderPage title="Diplomate Dashboard" phase={2} />,
+        element: <PlaceholderPage title="Diplomate Dashboard" phase={5} />,
       },
     ],
-  },
-  {
-    // Shared Candidate/Diplomate pages; navigation becomes role-aware in Phase 2.
-    element: <DashboardLayout areaLabel="Member" navigation={MEMBER_NAVIGATION} />,
-    children: [
+  ),
+  // Pages shared by Candidates and Diplomates.
+  protectedArea(
+    ['CANDIDATE', 'DIPLOMATE'],
+    [
       {
         path: ROUTES.member.fillForm,
-        element: <PlaceholderPage title="Certificate Form" phase={5} />,
+        element: <PlaceholderPage title="Certificate Form" phase={6} />,
       },
       {
         path: ROUTES.member.history,
@@ -98,9 +106,9 @@ export const routes: RouteObject[] = [
         path: ROUTES.member.historyDetail,
         element: <PlaceholderPage title="Submission Details" phase={7} />,
       },
-      { path: ROUTES.member.profile, element: <PlaceholderPage title="Profile" phase={2} /> },
+      { path: ROUTES.member.profile, element: <PlaceholderPage title="Profile" phase={3} /> },
     ],
-  },
+  ),
   ...devRoutes,
   { path: ROUTES.forbidden, element: <ForbiddenPage /> },
   { path: '*', element: <NotFoundPage /> },

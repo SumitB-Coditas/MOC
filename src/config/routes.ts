@@ -1,4 +1,5 @@
 import { generatePath } from 'react-router-dom'
+import type { Role } from '@/types/auth'
 
 /** Single source of truth for every URL in the app. */
 export const ROUTES = {
@@ -41,4 +42,11 @@ export const buildPath = {
   fillForm: (assignmentId: string) => generatePath(ROUTES.member.fillForm, { assignmentId }),
   historyDetail: (submissionId: string) =>
     generatePath(ROUTES.member.historyDetail, { submissionId }),
+}
+
+/** Where each role lands after login, and where it is sent when visiting another role's area. */
+export const HOME_PATH_BY_ROLE: Record<Role, string> = {
+  ADMIN: ROUTES.admin.dashboard,
+  CANDIDATE: ROUTES.candidate.dashboard,
+  DIPLOMATE: ROUTES.diplomate.dashboard,
 }

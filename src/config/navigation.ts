@@ -1,5 +1,6 @@
 import { FileText, History, Inbox, LayoutDashboard, Settings, UserRound, Users } from 'lucide-react'
 import type { NavItem } from '@/components/layout/navigation'
+import type { Role } from '@/types/auth'
 import { ROUTES } from './routes'
 
 export const ADMIN_NAVIGATION: NavItem[] = [
@@ -25,8 +26,8 @@ export const DIPLOMATE_NAVIGATION: NavItem[] = [
   ...MEMBER_SHARED_NAVIGATION,
 ]
 
-/**
- * Used by the shared member pages until Phase 2, when the layout will pick
- * CANDIDATE_ or DIPLOMATE_NAVIGATION from the signed-in user's role.
- */
-export const MEMBER_NAVIGATION: NavItem[] = MEMBER_SHARED_NAVIGATION
+export const NAVIGATION_BY_ROLE: Record<Role, NavItem[]> = {
+  ADMIN: ADMIN_NAVIGATION,
+  CANDIDATE: CANDIDATE_NAVIGATION,
+  DIPLOMATE: DIPLOMATE_NAVIGATION,
+}

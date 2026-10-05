@@ -2,7 +2,7 @@
 
 A frontend-only Certificate Management System with three roles: **Admin**, **Candidate** and **Diplomate**. Admins assign certificate forms. Candidates and Diplomates fill them in, save drafts and submit them. The app tracks 3-year renewal cycles with a grace period.
 
-> **Status:** Phase 1 (project setup and design system). Routes render placeholders, and features are added phase by phase. See [Roadmap](#roadmap).
+> **Status:** Phase 2 (authentication and registration) is awaiting review. Pages not yet built render placeholders. See [Roadmap](#roadmap).
 
 ## Tech stack
 
@@ -121,8 +121,27 @@ _To be documented in Phase 4 (Certification Engine), covering the confirmed rule
 
 ## Demo credentials
 
-_To be added in Phase 2._
+| Role      | How to sign in                                                        |
+| --------- | --------------------------------------------------------------------- |
+| Admin     | `admin@cms.local` / `Admin@123` (preconfigured; cannot be registered) |
+| Candidate | Register at `/register`, then sign in with your own credentials       |
+
+The Admin account is defined in exactly one place: [`src/config/admin.ts`](src/config/admin.ts). The login page reads its hint from there.
+
+## Authentication
+
+- **One login page for all roles.** After sign-in, each role goes to its own dashboard (`/admin/dashboard`, `/candidate/dashboard`, `/diplomate/dashboard`).
+- **Registration creates Candidates only.** The service rejects any extra field such as `role`, and the form has no role selector. Emails are normalized (trimmed, lower-cased) and must be unique. The admin email is reserved.
+- **Roles are derived, never stored.** Until the Certification Engine (Phase 4), every registered user is a Candidate (`src/services/userRole.ts`).
+- **Sessions** are stored at `cms:session` as `{ actorId, role, issuedAt }`, with no credentials. The session is re-checked on every load, and the role is re-derived. Signing in or out in one tab updates the others.
+- **Passwords** are stored as a salted SHA-256 hash, never as plaintext. The confirm-password field exists only in the form.
+- **Route guards:** `RequireAuth` sends signed-out visitors to `/login` and users of the wrong role to their own dashboard. `PublicOnly` sends signed-in users away from `/login` and `/register`.
+- **REST-ready:** pages use `useAuth()`, which calls the `AuthService` interface (`src/features/auth/authService.ts`). A REST implementation can replace it without UI changes.
 
 ## Limitations
 
-This is a frontend-only demo. All data, including credentials, lives in the browser's `localStorage`. It is **not secure** and is not meant for production use.
+This is a frontend-only demo. All data lives in the browser's `localStorage`. It is **not secure** and is not meant for production use:
+
+- The Admin password ships in the JavaScript bundle.
+- Anyone with access to the browser can edit `localStorage`, including forging an Admin session. Route guards protect the user experience, not the data.
+- Salted SHA-256 is a fast hash. Real systems use a server with bcrypt or argon2.

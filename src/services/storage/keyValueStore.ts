@@ -27,6 +27,8 @@ const PROBE_KEY = '__cms_storage_probe__'
  * just won't survive a reload.
  */
 export function resolveBrowserStore(): KeyValueStore {
+  // Outside a browser (e.g. unit tests in Node), never touch Node's experimental localStorage.
+  if (typeof window === 'undefined') return createMemoryStore()
   try {
     const store = globalThis.localStorage
     store.setItem(PROBE_KEY, PROBE_KEY)

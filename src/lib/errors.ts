@@ -35,3 +35,8 @@ export class AppError extends Error {
 export function isAppError(error: unknown): error is AppError {
   return error instanceof AppError
 }
+
+/** A user-presentable message for any thrown value. */
+export function getErrorMessage(error: unknown): string {
+  return isAppError(error) ? error.message : 'Something went wrong. Please try again.'
+}
