@@ -8,7 +8,7 @@ import { assertEmailAvailable } from '@/services/emailAvailability'
 import { usersCollection } from '@/services/repositories/users'
 import { createSessionStore, subscribeToSessionChangesInOtherTabs } from '@/services/session'
 import { storage as appStorage, type StorageClient } from '@/services/storage'
-import { resolveUserRole, type UserRoleResolver } from '@/services/userRole'
+import { createUserRoleResolver, type UserRoleResolver } from '@/services/userRole'
 import type { AuthUser, Role, UserRecord } from '@/types/auth'
 import { registrationInputSchema, type LoginCredentials, type RegistrationInput } from './schemas'
 
@@ -52,7 +52,7 @@ interface AuthServiceDeps {
 
 export function createAuthService({
   storage,
-  resolveRole = resolveUserRole,
+  resolveRole = createUserRoleResolver(storage),
   now = () => new Date(),
   subscribeToExternalChanges = subscribeToSessionChangesInOtherTabs,
 }: AuthServiceDeps): AuthService {

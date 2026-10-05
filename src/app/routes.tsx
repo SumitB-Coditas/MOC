@@ -8,7 +8,13 @@ import { RequireAuth } from '@/features/auth/guards/RequireAuth'
 import { RoleRedirect } from '@/features/auth/guards/RoleRedirect'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage'
+import { AdminSubmissionsPage } from '@/features/certification/pages/AdminSubmissionsPage'
+import { FillFormPage } from '@/features/certification/pages/FillFormPage'
+import { HistoryPage } from '@/features/certification/pages/HistoryPage'
+import { MemberDashboardPage } from '@/features/certification/pages/MemberDashboardPage'
+import { SubmissionDetailPage } from '@/features/certification/pages/SubmissionDetailPage'
 import { AdminDashboardPage } from '@/features/dashboard/pages/AdminDashboardPage'
+import { DemoSettingsPage } from '@/features/settings/pages/DemoSettingsPage'
 import { UserDetailPage } from '@/features/users/pages/UserDetailPage'
 import { UsersListPage } from '@/features/users/pages/UsersListPage'
 import { ForbiddenPage } from '@/pages/ForbiddenPage'
@@ -57,51 +63,36 @@ export const routes: RouteObject[] = [
       { path: ROUTES.admin.dashboard, element: <AdminDashboardPage /> },
       { path: ROUTES.admin.users, element: <UsersListPage /> },
       { path: ROUTES.admin.userDetail, element: <UserDetailPage /> },
-      {
-        path: ROUTES.admin.submissions,
-        element: <PlaceholderPage title="Submissions" phase={6} />,
-      },
+      { path: ROUTES.admin.submissions, element: <AdminSubmissionsPage /> },
       {
         path: ROUTES.admin.submissionDetail,
-        element: <PlaceholderPage title="Submission Details" phase={6} />,
+        element: (
+          <SubmissionDetailPage backTo={ROUTES.admin.submissions} backLabel="All submissions" />
+        ),
       },
       { path: ROUTES.admin.forms, element: <PlaceholderPage title="Form Templates" phase={5} /> },
-      { path: ROUTES.admin.settings, element: <PlaceholderPage title="Demo Settings" phase={7} /> },
+      { path: ROUTES.admin.settings, element: <DemoSettingsPage /> },
     ],
   ),
   protectedArea(
     ['CANDIDATE'],
-    [
-      {
-        path: ROUTES.candidate.dashboard,
-        element: <PlaceholderPage title="Candidate Dashboard" phase={5} />,
-      },
-    ],
+    [{ path: ROUTES.candidate.dashboard, element: <MemberDashboardPage /> }],
   ),
   protectedArea(
     ['DIPLOMATE'],
-    [
-      {
-        path: ROUTES.diplomate.dashboard,
-        element: <PlaceholderPage title="Diplomate Dashboard" phase={5} />,
-      },
-    ],
+    [{ path: ROUTES.diplomate.dashboard, element: <MemberDashboardPage /> }],
   ),
   // Pages shared by Candidates and Diplomates.
   protectedArea(
     ['CANDIDATE', 'DIPLOMATE'],
     [
-      {
-        path: ROUTES.member.fillForm,
-        element: <PlaceholderPage title="Certificate Form" phase={6} />,
-      },
-      {
-        path: ROUTES.member.history,
-        element: <PlaceholderPage title="Certificate History" phase={7} />,
-      },
+      { path: ROUTES.member.fillForm, element: <FillFormPage /> },
+      { path: ROUTES.member.history, element: <HistoryPage /> },
       {
         path: ROUTES.member.historyDetail,
-        element: <PlaceholderPage title="Submission Details" phase={7} />,
+        element: (
+          <SubmissionDetailPage backTo={ROUTES.member.history} backLabel="Certificate history" />
+        ),
       },
       { path: ROUTES.member.profile, element: <PlaceholderPage title="Profile" phase={8} /> },
     ],

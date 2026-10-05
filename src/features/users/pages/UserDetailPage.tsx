@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/card'
 import { ROUTES } from '@/config/routes'
 import { useAuth } from '@/features/auth/useAuth'
+import { AdminCertificationPanel } from '@/features/certification/components/AdminCertificationPanel'
 import { formatDateTime } from '@/lib/date'
 import { getErrorMessage, isAppError } from '@/lib/errors'
 import { AccountStatusBadge } from '../components/AccountStatusBadge'
@@ -203,6 +204,8 @@ export function UserDetailPage() {
           />
         </CardContent>
       </Card>
+
+      <AdminCertificationPanel userId={user.id} />
     </div>
   )
 }

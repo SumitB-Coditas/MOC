@@ -1,6 +1,7 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { NAVIGATION_BY_ROLE } from '@/config/navigation'
 import { ROLE_LABELS } from '@/config/roles'
+import { DemoClockIndicator } from '@/features/settings/DemoClockIndicator'
 import { useAuth } from '../useAuth'
 import { UserMenu } from './UserMenu'
 
@@ -14,7 +15,12 @@ export function RoleDashboardLayout() {
     <DashboardLayout
       areaLabel={ROLE_LABELS[user.role]}
       navigation={NAVIGATION_BY_ROLE[user.role]}
-      userSlot={<UserMenu user={user} />}
+      userSlot={
+        <>
+          <DemoClockIndicator />
+          <UserMenu user={user} />
+        </>
+      }
     />
   )
 }

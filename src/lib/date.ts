@@ -11,6 +11,40 @@ export function isValidIsoDate(value: string): boolean {
   )
 }
 
+function parseIsoDate(value: string): [year: number, month: number, day: number] {
+  if (!isValidIsoDate(value)) throw new Error(`Invalid ISO date: ${value}`)
+  return value.split('-').map(Number) as [number, number, number]
+}
+
+function formatIsoDate(year: number, month: number, day: number): string {
+  const pad = (n: number, width = 2) => String(n).padStart(width, '0')
+  return `${pad(year, 4)}-${pad(month)}-${pad(day)}`
+}
+
+/** Calendar-day arithmetic on `YYYY-MM-DD` strings (timezone-free). */
+export function addDays(isoDate: string, days: number): string {
+  const [year, month, day] = parseIsoDate(isoDate)
+  const date = new Date(Date.UTC(year, month - 1, day + days))
+  return formatIsoDate(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate())
+}
+
+/** Whole days from `from` to `to` (negative when `to` is earlier). */
+export function daysBetween(from: string, to: string): number {
+  const toUtc = (iso: string) => {
+    const [year, month, day] = parseIsoDate(iso)
+    return Date.UTC(year, month - 1, day)
+  }
+  return Math.round((toUtc(to) - toUtc(from)) / 86_400_000)
+}
+
+/** Adds whole years; Feb 29 clamps to Feb 28 in non-leap years (plan A15). */
+export function addYears(isoDate: string, years: number): string {
+  const [year, month, day] = parseIsoDate(isoDate)
+  const targetYear = year + years
+  const lastDayOfMonth = new Date(Date.UTC(targetYear, month, 0)).getUTCDate()
+  return formatIsoDate(targetYear, month, Math.min(day, lastDayOfMonth))
+}
+
 /** The user's local calendar date as `YYYY-MM-DD`. */
 export function toIsoDate(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0')

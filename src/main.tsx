@@ -4,6 +4,7 @@ import { App } from '@/app/App'
 import { isAppError } from '@/lib/errors'
 import { StorageErrorPage } from '@/pages/StorageErrorPage'
 import { bootstrapStorage, storage } from '@/services/storage'
+import { APP_SEEDERS } from '@/services/storage/seeders'
 import './index.css'
 
 const rootElement = document.getElementById('root')
@@ -17,7 +18,7 @@ function resetStorage() {
 
 let content: ReactNode
 try {
-  bootstrapStorage(storage)
+  bootstrapStorage(storage, { seeders: APP_SEEDERS })
   content = <App />
 } catch (error) {
   console.error('[storage] bootstrap failed', error)

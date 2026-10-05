@@ -9,7 +9,7 @@ export interface Seeder {
   create: () => unknown
 }
 
-/** Mock-data seeders, registered by later phases (e.g. the certificate form template). */
+/** Default: no seeders. The app passes its own (`services/storage/seeders.ts`) at start-up. */
 export const SEEDERS: Seeder[] = []
 
 export interface BootstrapOptions extends MigrationOptions {

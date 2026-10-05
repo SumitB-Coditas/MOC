@@ -5,7 +5,7 @@ import { requireAdmin } from '@/services/authorization'
 import { assertEmailAvailable } from '@/services/emailAvailability'
 import { usersCollection } from '@/services/repositories/users'
 import { storage as appStorage, type StorageClient } from '@/services/storage'
-import { resolveUserRole, type UserRoleResolver } from '@/services/userRole'
+import { createUserRoleResolver, type UserRoleResolver } from '@/services/userRole'
 import type { UserRecord } from '@/types/auth'
 import type { ManagedUser, UserOverview, UserQuery } from '@/types/users'
 import { updateProfileSchema, type UpdateProfileInput } from './schemas'
@@ -33,7 +33,7 @@ interface UsersServiceDeps {
 
 export function createUsersService({
   storage,
-  resolveRole = resolveUserRole,
+  resolveRole = createUserRoleResolver(storage),
   now = () => new Date(),
 }: UsersServiceDeps): UsersService {
   const users = () => usersCollection.repository(storage)
